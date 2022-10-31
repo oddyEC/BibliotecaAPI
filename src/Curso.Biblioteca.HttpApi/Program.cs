@@ -17,6 +17,12 @@ builder.Services.AddScoped<BibliotecaDbContext>();
 builder.Services.AddTransient<IEditorialRepository, EditorialRepository>();
 builder.Services.AddTransient<IEditorialAppService, EditorialAppService>();
 
+builder.Services.AddTransient<IAutorRepository, AutorRepository>();
+builder.Services.AddTransient<IAutorAppService, AutorAppService>();
+
+builder.Services.AddTransient<ILibroRepository, LibroRepository>();
+builder.Services.AddTransient<ILibroAppService, LibroAppService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
