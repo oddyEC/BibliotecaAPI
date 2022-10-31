@@ -3,7 +3,7 @@ using Curso.Biblioteca.Domain;
 
 namespace Curso.Biblioteca.Application
 {
-    public class AutorAppService: IAutorAppService
+    public class AutorAppService : IAutorAppService
     {
         private readonly IAutorRepository repository;
 
@@ -12,24 +12,73 @@ namespace Curso.Biblioteca.Application
             this.repository = repository;
         }
 
-        public Task<AutorDto> CreateAsync(AutorCrearActualizarDto autor)
+        public async Task<AutorDto> CreateAsync(AutorCrearActualizarDto autorDto)
         {
-            throw new NotImplementedException();
+                       //Reglas Validaciones... 
+            var existeNombreAutor = await repository.ExisteNombre(autorDto.Nombre);
+            if (existeNombreAutor)
+            {
+                throw new ArgumentException($"Ya existe una autor con el nombre {autorDto.Nombre}");
+            }
+
+            //Mapeo Dto => Entidad
+            var autor = new Autor();
+            autor.Nombre = autorDto.Nombre;
+
+            //Persistencia objeto
+            autor = await repository.AddAsync(autor);
+            //await unitOfWork.SaveChangesAsync();
+
+            //Mapeo Entidad => Dto
+            var autorCreado = new AutorDto();
+            autorCreado.Nombre = autor.Nombre;
+            autorCreado.Id = autor.Id;
+
+            //TODO: Enviar un correo electronica... 
+
+            return autorCreado;
         }
 
-        public Task<bool> DeleteAsync(int autorId)
+        public async Task<bool> DeleteAsync(int autorId)
         {
-            throw new NotImplementedException();
+            var autor = await repository.GetByIdAsync(autorId);
+            if (autor == null)
+            {
+                throw new ArgumentException($"El autor con el id: {autorId}, no existe");
+            }
+            repository.Delete(autor);
+            return true;
         }
 
         public ICollection<AutorDto> GetAll()
         {
-            throw new NotImplementedException();
+            var autorList = repository.GetAll();
+            var autorListDto = from e in autorList
+                                   select new AutorDto()
+                                   {
+                                       Id = e.Id,
+                                       Nombre = e.Nombre
+                                   };
+            return autorListDto.ToList();
         }
 
-        public Task UpdateAsync(int id, AutorCrearActualizarDto autor)
+        public async Task UpdateAsync(int id, AutorCrearActualizarDto autorDto)
         {
-            throw new NotImplementedException();
+            var autor = await repository.GetByIdAsync(id);
+            if (autor == null)
+            {
+                throw new ArgumentException($"La autor con el id: {id}, no existe");
+            }
+            var existeNombreAutor = await repository.ExisteNombre(autorDto.Nombre, id);
+            if (existeNombreAutor)
+            {
+                throw new ArgumentException($"Ya existe una autor con el nombre {autorDto.Nombre}");
+            }
+            //mapeo Dto => Entidad
+            autor.Nombre = autorDto.Nombre;
+            await repository.UpdateAsync(autor);
+
+            return;
         }
 
 
