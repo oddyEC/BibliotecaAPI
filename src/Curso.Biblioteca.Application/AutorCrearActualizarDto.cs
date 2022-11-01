@@ -12,5 +12,7 @@ namespace Curso.Biblioteca.Application
         [Required]
         [StringLength(DominioConstantes.NOMBRE_MAXIMO)]
         public string Nombre { get; set; }
+
+        
     }
 }
