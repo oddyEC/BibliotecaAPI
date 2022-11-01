@@ -18,11 +18,11 @@ namespace Curso.Biblioteca.Application
 
         [Required]
         public int AutorId { get; set; }
-        public virtual Autor Autor { get; set; }
+        public string Autor { get; set; }
 
         [Required]
         public int EditorialId { get; set; }
-        public virtual Editorial Editorial { get; set; }
+        public string Editorial { get; set; }
 
     }
 }

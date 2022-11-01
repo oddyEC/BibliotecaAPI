@@ -8,10 +8,12 @@ namespace Curso.Biblioteca.Application
     public class LibroAppService : ILibroAppService
     {
         private readonly ILibroRepository repository;
+       // private readonly IUnitOfWork unitOfWork;
 
         public LibroAppService(ILibroRepository repository)
         {
             this.repository = repository;
+            //this.unitOfWork = unitOfWork;
         }
 
         public async Task<LibroDto> CreateAsync(LibroCrearActualizarDto libroDto)
@@ -25,6 +27,8 @@ namespace Curso.Biblioteca.Application
             //Mapeo Dto => Entidad
             var libro = new Libro();
             libro.Nombre = libroDto.Nombre;
+            libro.AutorId = libroDto.AutorId;
+            libro.EditorialId = libroDto.EditorialId;
 
             //Persistencia objeto
             libro = await repository.AddAsync(libro);
@@ -34,6 +38,8 @@ namespace Curso.Biblioteca.Application
             var libroCreado = new LibroDto();
             libroCreado.Nombre = libro.Nombre;
             libroCreado.Id = libro.Id;
+            libroCreado.AutorId = libro.AutorId;
+            libroCreado.EditorialId = libro.EditorialId;
 
             //TODO: Enviar un correo electronica... 
 
@@ -51,16 +57,35 @@ namespace Curso.Biblioteca.Application
             return true;
         }
 
-        public ICollection<LibroDto> GetAll()
+        public ListaPaginada<LibroDto> GetAll(int limit = 10, int offset = 0)
         {
-            var libroList = repository.GetAll();
-            var libroListDto = from e in libroList
-                                   select new LibroDto()
-                                   {
-                                       Id = e.Id,
-                                       Nombre = e.Nombre
-                                   };
-            return libroListDto.ToList();
+            
+            var libroList = repository.GetAllIncluding(x => x.Autor,
+                                                        x => x.Editorial);
+            var total = libroList.Count();
+            // var libroListDto = from e in libroList
+            //                        select new LibroDto()
+            //                        {
+            //                            Id = e.Id,
+            //                            Nombre = e.Nombre
+            //                        };
+            var libroListDto = libroList.Skip(offset)
+                                        .Take(limit)
+                                        .Select(
+                                            x => new LibroDto()
+                                            {
+                                                Id = x.Id,
+                                                Nombre = x.Nombre,
+                                                AutorId = x.Autor.Id,
+                                                Autor = x.Autor.Nombre,
+                                                Editorial = x.Editorial.Nombre
+
+                                            }
+                                        );
+            var resultado = new ListaPaginada<LibroDto>();
+            resultado.Total = total;
+            resultado.Lista = libroListDto.ToList();
+            return resultado;
         }
 
         public async Task UpdateAsync(int id, LibroCrearActualizarDto libroDto)
@@ -77,7 +102,10 @@ namespace Curso.Biblioteca.Application
             }
             //mapeo Dto => Entidad
             libro.Nombre = libroDto.Nombre;
+            libro.AutorId = libroDto.AutorId;
+            libro.EditorialId = libroDto.EditorialId;
             await repository.UpdateAsync(libro);
+            //await repository.UnitOfWork.SaveChangesAsync();
 
             return;
         }

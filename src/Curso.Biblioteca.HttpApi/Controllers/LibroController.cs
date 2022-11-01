@@ -18,10 +18,10 @@ namespace Curso.Biblioteca.HttpApi.Controllers
             this.libroAppService = libroAppService;
         }
         [HttpGet]
-        public ICollection<LibroDto> GetAll()
+        public ListaPaginada<LibroDto> GetAll(int limit = 10, int offset = 0)
         {
 
-            return libroAppService.GetAll();
+            return libroAppService.GetAll(limit,offset);
         }
 
         [HttpPost]

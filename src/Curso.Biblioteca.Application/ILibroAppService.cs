@@ -7,7 +7,7 @@ namespace Curso.Biblioteca.Application
 {
     public interface ILibroAppService
     {
-        ICollection<LibroDto> GetAll();
+        ListaPaginada<LibroDto> GetAll(int limit = 10, int offset = 0);
 
         Task<LibroDto> CreateAsync(LibroCrearActualizarDto libro);
 
